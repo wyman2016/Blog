@@ -3,6 +3,7 @@ from .models import Blog, BlogType
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.db.models.aggregates import Count
+from read_record.utils import read_statistics_one_read
 
 padding_num = 2 #前后显示多少个页码
 
@@ -18,6 +19,10 @@ def blog_detail(requset, blog_pk):
     context['previous_blog'] = Blog.objects.filter(create_time__gt=blog.create_time).last()
     context['next_blog'] = Blog.objects.filter(create_time__lt=blog.create_time).first()
     context['blog'] = blog
+    read_cookie_key = read_statistics_one_read(requset, blog)
+    respose = render_to_response('blog/blog_detail.html', context)
+    # 只读次数存储到cookies,阅读标记
+    respose.set_cookie(read_cookie_key, 'true')
     return render_to_response('blog/blog_detail.html', context)
 
 
