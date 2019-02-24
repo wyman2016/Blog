@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.fields import exceptions
-from django.utils import  timezone
+from django.utils import timezone
 
 class ReadNum(models.Model):
     read_num = models.IntegerField(default=0)

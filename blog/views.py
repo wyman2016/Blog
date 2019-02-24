@@ -82,6 +82,7 @@ def blog_parm_caculate( map ):
     context = {}
     context['blogs'] = blogs_all_list
     context['page_range'] = page_range
+    #获取博客类型下,blog的数量
     context['blog_types'] = BlogType.objects.annotate(type_blog_num = Count('blog'))
     context['blog_dates'] = blog_dates_dic
     context['page_of_blogs'] = page_of_blogs
