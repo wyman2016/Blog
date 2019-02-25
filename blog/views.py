@@ -1,53 +1,61 @@
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from .models import Blog, BlogType
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.db.models.aggregates import Count
 from read_record.utils import read_statistics_one_read
+from comment.models import Comment
+from django.contrib.contenttypes.models import ContentType
 
 padding_num = 2 #前后显示多少个页码
 
-def blog_list(requset):
+def blog_list(request):
     blogs_all_list = Blog.objects.all()
-    context = blog_parm_caculate({'blogs_all_list':blogs_all_list,'requset':requset} )
-    return render_to_response('blog/blog_list.html', context)
+    context = blog_parm_caculate({'blogs_all_list':blogs_all_list,'request':request} )
+    return render(request, 'blog/blog_list.html', context)
 
 
-def blog_detail(requset, blog_pk):
-    context = {}
+def blog_detail(request, blog_pk):
+
     blog = get_object_or_404(Blog, pk=blog_pk)
+    # 获取content_type
+    blog_content_type = ContentType.objects.get_for_model(blog)
+    comments = Comment.objects.filter(content_type=blog_content_type)
+
+    context = {}
     context['previous_blog'] = Blog.objects.filter(create_time__gt=blog.create_time).last()
     context['next_blog'] = Blog.objects.filter(create_time__lt=blog.create_time).first()
     context['blog'] = blog
-    read_cookie_key = read_statistics_one_read(requset, blog)
-    respose = render_to_response('blog/blog_detail.html', context)
+    context['comments'] = comments
+    read_cookie_key = read_statistics_one_read(request, blog)
+    respose = render(request, 'blog/blog_detail.html', context)
     # 只读次数存储到cookies,阅读标记
     respose.set_cookie(read_cookie_key, 'true')
-    return render_to_response('blog/blog_detail.html', context)
+    return render(request, 'blog/blog_detail.html', context)
 
 
-def blog_with_type(requset, blog_type_pk):
+def blog_with_type(request, blog_type_pk):
     blog_type = get_object_or_404(BlogType, pk=blog_type_pk)
     blogs_all_list = Blog.objects.filter(blog_type=blog_type)
-    context = blog_parm_caculate({'blogs_all_list':blogs_all_list,'requset':requset} )
+    context = blog_parm_caculate({'blogs_all_list':blogs_all_list,'request':request} )
     blog_type = get_object_or_404(BlogType, pk=blog_type_pk)
     context['blog_type'] = BlogType.objects.all()
-    return render_to_response('blog/blog_with_type.html', context)
+    return render(request, 'blog/blog_with_type.html', context)
 
-def blog_with_date(requset, year, month):
+def blog_with_date(request, year, month):
     #通过年月筛选
     blogs_all_list = Blog.objects.filter(create_time__year=year, create_time__month=month)
-    context = blog_parm_caculate({'blogs_all_list':blogs_all_list,'requset':requset} )
+    context = blog_parm_caculate({'blogs_all_list':blogs_all_list,'request':request} )
 
     context['blog_with_date_des'] = '%s年%s月' % (year,month)
     context['blog_date'] = Blog.objects.dates('create_time', 'month', order="DESC")
-    return render_to_response('blog/blog_with_date.html', context)
+    return render(request, 'blog/blog_with_date.html', context)
 
 def blog_parm_caculate( map ):
-    requset = map['requset']
+    request = map['request']
     blogs_all_list = map['blogs_all_list']
     paginator = Paginator(map['blogs_all_list'], settings.EACH_PAGE_BLOGS_NUMBER) #pagesize:10
-    page_number = requset.GET.get('page', 1) #获取页码
+    page_number = request.GET.get('page', 1) #获取页码
     page_of_blogs = paginator.get_page(page_number) #得到博客
     current_page_num = page_of_blogs.number
     page_range = []

@@ -1,39 +1,81 @@
-{%extends "base.html"%}
+{% extends "base.html" %}
 
 {% load staticfiles %}
 {% block header_extends %}
-<link rel="stylesheet" href="{% static 'blog/blog.css' %}">
+    <link rel="stylesheet" href="{% static 'blog/blog.css' %}">
 {% endblock %}
 
 {% block title %}
-{{ blog.title }}
+    {{ blog.title }}
 {% endblock %}
 
 {% block nav_blog_active %}
-active
+    active
 {% endblock %}
 
 {% block content %}
 
-<div class="container">
-    <div class="row">
-        <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10">
-            <h3>{{ blog.title }}</h3>
-            <ul class="blog-info-description">
-                <li>作者: {{ blog.author }}</li>
-                <li>分类: <a href="{% url 'blog_with_type' blog.blog_type.pk %}">{{ blog.blog_type }}</a></li>
-                <li>发表日期: {{ blog.create_time }}</li>
-            </ul>
-            <div class="blog-content">{{ blog.content|safe }}</div>
-            <div class="blog-more">
-                {% if previous_blog %}
-                上一篇: <a href="{% url 'blog_detail' previous_blog.pk %}"><<{{ previous_blog.title }}>></a>
-                {% endif%} 
-                {% if next_blog %}
-                ----- 下一篇: <a href="{% url 'blog_detail' next_blog.pk %}"><<{{ next_blog.title }}>></a>
-                {% endif%}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10">
+                <h3>{{ blog.title }}</h3>
+                <ul class="blog-info-description">
+                    <li>作者: {{ blog.author }}</li>
+                    <li>分类: <a href="{% url 'blog_with_type' blog.blog_type.pk %}">{{ blog.blog_type }}</a></li>
+                    <li>发表日期: {{ blog.create_time }}</li>
+                </ul>
+                <div class="blog-content">{{ blog.content|safe }}</div>
+                <div class="blog-more">
+                    {% if previous_blog %}
+                        上一篇: <a href="{% url 'blog_detail' previous_blog.pk %}"><<{{ previous_blog.title }}>></a>
+                    {% endif %}
+                    {% if next_blog %}
+                        ----- 下一篇: <a href="{% url 'blog_detail' next_blog.pk %}"><<{{ next_blog.title }}>></a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10">
+                <div class="comment-area">
+                    <h3 class="comment-area-title">提交评论</h3>
+                    {#                如果登陆了#}
+                    {% if user.is_authenticated %}
+                        <p>登陆了</p>
+                        <form action="{% url 'update_comment' %}" method="post" style="overflow:hidden">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="conmment_text">{{ user.username }}, 欢迎评论</label>
+                            <textarea name="text" id="comment_text"  rows="4" class="form-control"></textarea>
+                        </div>
+
+                            <input type="hidden" name="object_id" value="{{ blog.pk }}">
+                            <input type="hidden" name="content_type" value="blog">
+                            <input type="submit"  value="评论" class="btn btn-primary" style="float:right">
+                        </form>
+                    {% else %}
+                        {#            如果没有登陆#}
+                        <p>没有登陆</p>
+                        {% csrf_token %}
+                        <form action="{% url 'login' %}" method="post">
+                            {#                        去掉警告#}
+                            {% csrf_token %}
+                            <input type="text" name="username">
+                            <input type="password" name="password">
+                            <input type="submit" name="登陆">
+                        </form>
+                    {% endif %}
+                </div>
+                <div class="comment-area">
+                    <h3 class="comment-area-title">评论列表</h3>
+                    {% for comment in comments %}
+                        {{ comment.user.username }}
+                        {{ comment.comment_time }}
+                        {{ comment.text }}
+                    {% endfor %}
+
+                </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

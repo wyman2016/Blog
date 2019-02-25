@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'blog',
     'read_record',
+    'comment',
     'ckeditor',
     'ckeditor_uploader',
 ]
@@ -87,6 +88,13 @@ DATABASES = {
     }
 }
 
+# 缓存策略
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'my_cache_table',
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
