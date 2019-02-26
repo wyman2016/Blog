@@ -56,13 +56,10 @@
                         {#            如果没有登陆#}
                         <p>没有登陆</p>
                         {% csrf_token %}
-                        <form action="{% url 'login' %}" method="post">
-                            {#                        去掉警告#}
-                            {% csrf_token %}
-                            <input type="text" name="username">
-                            <input type="password" name="password">
-                            <input type="submit" name="登陆">
-                        </form>
+                        {#                        获取源路径,赋值给form.#}
+                        <a class="btn btn-primary" href="{% url 'login' %}?form={{ request.get_full_path }}">登录</a>
+                        <span> or </span>
+                        <a class="btn btn-danger" href="{% url 'register' %}?form={{ request.get_full_path }}">注册</a>
                     {% endif %}
                 </div>
                 <div class="comment-area">
