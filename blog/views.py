@@ -20,7 +20,7 @@ def blog_detail(request, blog_pk):
     blog = get_object_or_404(Blog, pk=blog_pk)
     # 获取content_type
     blog_content_type = ContentType.objects.get_for_model(blog)
-    comments = Comment.objects.filter(content_type=blog_content_type)
+    comments = Comment.objects.filter(content_type=blog_content_type, object_id=blog.pk)
 
     context = {}
     context['previous_blog'] = Blog.objects.filter(create_time__gt=blog.create_time).last()
@@ -51,7 +51,7 @@ def blog_with_date(request, year, month):
     context['blog_date'] = Blog.objects.dates('create_time', 'month', order="DESC")
     return render(request, 'blog/blog_with_date.html', context)
 
-def blog_parm_caculate( map ):
+def blog_parm_caculate(map):
     request = map['request']
     blogs_all_list = map['blogs_all_list']
     paginator = Paginator(map['blogs_all_list'], settings.EACH_PAGE_BLOGS_NUMBER) #pagesize:10
