@@ -1,4 +1,6 @@
 from django.shortcuts import render, get_object_or_404
+
+from comment.forms import CommentForm
 from .models import Blog, BlogType
 from django.core.paginator import Paginator
 from django.conf import settings
@@ -20,18 +22,15 @@ def blog_detail(request, blog_pk):
     blog = get_object_or_404(Blog, pk=blog_pk)
     # 获取content_type
     blog_content_type = ContentType.objects.get_for_model(blog)
-    comments = Comment.objects.filter(content_type=blog_content_type, object_id=blog.pk)
-
     context = {}
     context['previous_blog'] = Blog.objects.filter(create_time__gt=blog.create_time).last()
     context['next_blog'] = Blog.objects.filter(create_time__lt=blog.create_time).first()
     context['blog'] = blog
-    context['comments'] = comments
     read_cookie_key = read_statistics_one_read(request, blog)
     respose = render(request, 'blog/blog_detail.html', context)
     # 只读次数存储到cookies,阅读标记
     respose.set_cookie(read_cookie_key, 'true')
-    return render(request, 'blog/blog_detail.html', context)
+    return respose
 
 
 def blog_with_type(request, blog_type_pk):
